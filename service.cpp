@@ -13,7 +13,7 @@ using std::sort;
 Service::Service(AbsRepo* rp, Validator& vd) {
     repo=rp;
     valid=vd;
-    //undo_act.clear();
+    undo_act.clear();
 }
 
 vector<Medicine>& Service::get_all_ent() {
@@ -34,7 +34,7 @@ void Service::add(const string& cname, const string& cprod, const string& csubst
         throw RepoException(err);
     }
     repo->add_medicine(m);
-    //undo_act.push_back(make_unique<UndoAdd>(repo,m));
+    undo_act.push_back(new UndoAdd(repo,m));
 }
 
 void Service::modify(const int& poz, const string& cname, const string& cprod, const string& csubst, const int& cprice) {
@@ -46,7 +46,7 @@ void Service::modify(const int& poz, const string& cname, const string& cprod, c
     }
     auto m=repo->get_elems()[poz];
     repo->modify_medicine(Medicine(cname,cprod,csubst,cprice),poz);
-//    undo_act.push_back(make_unique<UndoMod>(repo,m,poz));
+    undo_act.push_back(new UndoMod(repo,m,poz));
 }
 
 void Service::del(const int& poz){
@@ -58,7 +58,7 @@ void Service::del(const int& poz){
     }
     auto dlt=repo->get_elems()[poz];
     repo->delete_medicine(poz);
-    //undo_act.push_back(make_unique<UndoDel>(repo,dlt,poz));
+    undo_act.push_back(new UndoDel(repo,dlt,poz));
 }
 
 bool Service::search(const string& cname, const string& cprod, const string& csubst, const int& cprice) {
@@ -132,17 +132,17 @@ void Service::sort(int crit, vector<Medicine>& rez) {
     }
 }
 
-//void Service::undo() {
-//    if(undo_act.empty()){
-//        vector<string> err;
-//        err.emplace_back("Nu exista operatii la care sa se faca undo");
-//        throw RepoException(err);
-//    }
-//    unique_ptr<ActUndo> act=move(undo_act.back());
-//    act->doUndo();
-//    undo_act.pop_back();
-//    //delete act;
-//}
+void Service::undo() {
+    if(undo_act.empty()){
+        vector<string> err;
+        err.emplace_back("Nu exista operatii la care sa se faca undo");
+        throw RepoException(err);
+    }
+    ActUndo* act=undo_act.back();
+    act->doUndo();
+    undo_act.pop_back();
+    //delete act;
+}
 
 void test_service(){
     auto* r=new FileRepo("chaos.txt");

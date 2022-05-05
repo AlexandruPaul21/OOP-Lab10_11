@@ -14,6 +14,9 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QLayout>
+#include <QTextBlock>
+#include <set>
 
 
 class GUI : public QWidget{
@@ -34,19 +37,28 @@ private:
     QLineEdit *txtProd;
     QLineEdit *txtSubst;
     QLineEdit *txtPrice;
+
+    QWidget *opt_but;
+    QVBoxLayout *lay_opt;
+
+    vector<QPushButton*> subst_but;
+
     int lb_index;
     void init_GUI();
     void connectSignalsSlots();
     void reloadList(vector<Medicine>& meds);
+    void updateBut(vector<Medicine>& all);
 
     void addMed();
     void delMed();
     void uptMed();
+    void undoMed();
 public:
     GUI(Service& srv) : srv {srv}{
         init_GUI();
         connectSignalsSlots();
         reloadList(srv.get_all_ent());
+        updateBut(srv.get_all_ent());
     }
 };
 

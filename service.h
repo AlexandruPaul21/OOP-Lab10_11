@@ -6,7 +6,7 @@
 #define LAB10_11V2_SERVICE_H
 
 #include "repo.h"
-//#include "undo_act.h"
+#include "undo_act.h"
 
 /**
  * Clasa Service din arhitectura GRASP
@@ -79,14 +79,14 @@ public:
      */
     void sort(int crit,vector<Medicine>& rez);
 
-    //void undo();
+    void undo();
 
     ///destructor
     ~Service()=default;
 private:
     AbsRepo* repo;
     [[maybe_unused]] Validator valid;
-    //vector<unique_ptr<ActUndo>> undo_act;
+    vector<ActUndo*> undo_act;
 };
 
 void test_service();

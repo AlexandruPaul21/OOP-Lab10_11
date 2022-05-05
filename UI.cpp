@@ -88,6 +88,11 @@ void GUI::init_GUI() {
 
     lyMain->addWidget(w_right);
     lb_index=-1;
+
+    opt_but=new QWidget;
+    lay_opt=new QVBoxLayout;
+    opt_but->setLayout(lay_opt);
+    lyMain->addWidget(opt_but);
 }
 
 void GUI::connectSignalsSlots() {
@@ -142,6 +147,7 @@ void GUI::connectSignalsSlots() {
     QObject::connect(btn_add,&QPushButton::clicked,this,&GUI::addMed);
     QObject::connect(btn_del,&QPushButton::clicked,this,&GUI::delMed);
     QObject::connect(btn_mod,&QPushButton::clicked,this,&GUI::uptMed);
+    QObject::connect(btn_undo,&QPushButton::clicked,this,&GUI::undoMed);
 }
 
 void GUI::reloadList(vector<Medicine>& meds) {
@@ -157,6 +163,7 @@ void GUI::addMed() {
     try{
         srv.add(txtName->text().toStdString(),txtProd->text().toStdString(),txtSubst->text().toStdString(),txtPrice->text().toInt());
         reloadList(srv.get_all_ent());
+        updateBut(srv.get_all_ent());
     } catch (ValidationException& ve){
         QMessageBox::warning(this,"Warning",QString::fromStdString(toMyString(ve.msg)));
     } catch (RepoException& re){
@@ -182,6 +189,7 @@ void GUI::delMed() {
     } else {
         srv.del(index);
         reloadList(srv.get_all_ent());
+        updateBut(srv.get_all_ent());
     }
 }
 
@@ -199,7 +207,62 @@ void GUI::uptMed() {
     try {
         srv.modify(lb_index, name, prod, subst, price);
         reloadList(srv.get_all_ent());
+        updateBut(srv.get_all_ent());
     } catch(ValidationException& ve){
         QMessageBox::warning(this,"Warning",QString::fromStdString(toMyString(ve.msg)));
+    }
+}
+
+void clearLayout(QLayout *layout){
+    if (layout == NULL)
+        return;
+    QLayoutItem *item;
+    while((item = layout->takeAt(0))) {
+        if (item->layout()) {
+            clearLayout(item->layout());
+            delete item->layout();
+        }
+        if (item->widget()) {
+            delete item->widget();
+        }
+        delete item;
+    }
+}
+
+void GUI::updateBut(vector<Medicine> &all) {
+    clearLayout(lay_opt);
+    set<string> unique;
+    for(const auto& med : srv.get_all_ent()){
+        unique.insert(med.get_subst());
+    }
+
+    subst_but.clear();
+
+    for(auto& it : unique){
+        subst_but.push_back(new QPushButton(QString::fromStdString(it)));
+    }
+
+    for(auto btn : subst_but){
+        lay_opt->addWidget(btn);
+        QObject::connect(btn,&QPushButton::clicked,[=](){
+            auto val=btn->text().toStdString();
+            int nr=0;
+            for(const auto& med : srv.get_all_ent()){
+                if(med.get_subst()==val){
+                    ++nr;
+                }
+            }
+            QMessageBox::information(nullptr,"Info",QString::number(nr));
+        });
+    }
+}
+
+void GUI::undoMed() {
+    try {
+        srv.undo();
+        reloadList(srv.get_all_ent());
+        updateBut(srv.get_all_ent());
+    } catch(RepoException& re){
+        QMessageBox::warning(this,"Warning",QString::fromStdString("Nu se mai poate face undo"));
     }
 }
