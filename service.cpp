@@ -141,7 +141,7 @@ void Service::undo() {
     ActUndo* act=undo_act.back();
     act->doUndo();
     undo_act.pop_back();
-    //delete act;
+    delete act;
 }
 
 void test_service(){

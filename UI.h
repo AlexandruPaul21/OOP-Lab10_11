@@ -6,6 +6,7 @@
 #define LAB10_11V2_UI_H
 
 #include "service.h"
+#include "recipe_class.h"
 #include <QWidget>
 #include <QListWidget>
 #include <QBoxLayout>
@@ -22,7 +23,9 @@
 class GUI : public QWidget{
 private:
     Service srv;
+    Recipe rep;
     QListWidget *lst;
+    QListWidget *recipe_lst;
     QHBoxLayout *lyMain = new QHBoxLayout;
     QPushButton *btnSortName;
     QPushButton *btnSortProd;
@@ -33,10 +36,13 @@ private:
     QPushButton *btn_mod;
     QPushButton *btn_del;
     QPushButton *btn_undo;
+    QPushButton *btn_recipe;
+    QPushButton *btn_reset;
     QLineEdit *txtName;
     QLineEdit *txtProd;
     QLineEdit *txtSubst;
     QLineEdit *txtPrice;
+    QLineEdit *txtFilt;
 
     QWidget *opt_but;
     QVBoxLayout *lay_opt;
@@ -48,6 +54,7 @@ private:
     void connectSignalsSlots();
     void reloadList(vector<Medicine>& meds);
     void updateBut(vector<Medicine>& all);
+    void reloadRecipe(vector<Medicine>& meds);
 
     void addMed();
     void delMed();

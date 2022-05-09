@@ -25,17 +25,30 @@ void GUI::init_GUI() {
 
     l_left->addWidget(wdg);
 
-//    QWidget *flt_btn=new QWidget;
-//    QHBoxLayout *flt_lay=new QHBoxLayout;
-//    flt_btn->setLayout(flt_lay);
-//
-//    btnFilterPrice=new QPushButton("Filtrare dupa pret");
-//    btnFilterSubst=new QPushButton("Filtrare dupa subst");
-//
-//    flt_lay->addWidget(btnFilterSubst);
-//    flt_lay->addWidget(btnFilterPrice);
-//
-//    l_left->addWidget(flt_btn);
+    QWidget *form_filt=new QWidget;
+    QFormLayout *form_filt_lay=new QFormLayout;
+    form_filt->setLayout(form_filt_lay);
+
+    QLabel *lbl_filt=new QLabel;
+    txtFilt=new QLineEdit;
+
+    form_filt_lay->addRow(lbl_filt,txtFilt);
+
+    l_left->addWidget(form_filt);
+
+    QWidget *flt_btn=new QWidget;
+    QHBoxLayout *flt_lay=new QHBoxLayout;
+    flt_btn->setLayout(flt_lay);
+
+    btnFilterPrice=new QPushButton("Filter by price");
+    btnFilterSubst=new QPushButton("Filter by subst");
+    btn_reset=new QPushButton("Reset order");
+
+    flt_lay->addWidget(btn_reset);
+    flt_lay->addWidget(btnFilterSubst);
+    flt_lay->addWidget(btnFilterPrice);
+
+    l_left->addWidget(flt_btn);
 
     lyMain->addWidget(w_left);
 
@@ -83,6 +96,9 @@ void GUI::init_GUI() {
 
     btn_undo=new QPushButton("Undo");
     lay_but->addWidget(btn_undo);
+
+    btn_recipe=new QPushButton("Generate Recipe");
+    lay_but->addWidget(btn_recipe);
 
     lay_right->addWidget(but_zone);
 
@@ -148,6 +164,145 @@ void GUI::connectSignalsSlots() {
     QObject::connect(btn_del,&QPushButton::clicked,this,&GUI::delMed);
     QObject::connect(btn_mod,&QPushButton::clicked,this,&GUI::uptMed);
     QObject::connect(btn_undo,&QPushButton::clicked,this,&GUI::undoMed);
+
+    QObject::connect(btn_reset,&QPushButton::clicked,[=](){
+       reloadList(srv.get_all_ent());
+    });
+
+    QObject::connect(btnFilterPrice,&QPushButton::clicked,[=](){
+        string val_str=txtFilt->text().toStdString();
+        try{
+            vector<Medicine> rez;
+            rez.clear();
+            srv.filter(0,val_str,rez);
+            reloadList(rez);
+        } catch(RepoException& re){
+            QMessageBox::warning(this,"Warning",QString::fromStdString(toMyString(re.msg)));
+        }
+    });
+
+    QObject::connect(btnFilterSubst,&QPushButton::clicked,[=](){
+        string val_str=txtFilt->text().toStdString();
+        try{
+            vector<Medicine> rez;
+            rez.clear();
+            srv.filter(1,val_str,rez);
+            reloadList(rez);
+        } catch(RepoException& re){
+            QMessageBox::warning(this,"Warning",QString::fromStdString(toMyString(re.msg)));
+        }
+    });
+
+    QObject::connect(btn_recipe,&QPushButton::clicked,[=](){
+        QWidget *recipe_wdg=new QWidget;
+        QHBoxLayout *recipe_main_layout=new QHBoxLayout;
+        recipe_wdg->setLayout(recipe_main_layout);
+
+        recipe_lst=new QListWidget;
+        recipe_main_layout->addWidget(recipe_lst);
+
+        QWidget *recipe_but_zone=new QWidget;
+        QVBoxLayout *recipe_but_layout=new QVBoxLayout;
+        recipe_but_zone->setLayout(recipe_but_layout);
+
+        QWidget *recipe_form=new QWidget;
+        QFormLayout *recipe_form_layout=new QFormLayout;
+        recipe_form->setLayout(recipe_form_layout);
+
+        QLabel *lbl_recipe=new QLabel("Input");
+        QLineEdit *lne_recipe=new QLineEdit;
+
+        recipe_form_layout->addRow(lbl_recipe,lne_recipe);
+
+        recipe_but_layout->addWidget(recipe_form);
+
+        QPushButton *add_to_rec=new QPushButton("Add");
+        QPushButton *empty_rec=new QPushButton("Empty recipe");
+        QPushButton *random_add=new QPushButton("Add random");
+        QPushButton *export_recipe=new QPushButton("Export");
+        QPushButton *help_button=new QPushButton("Help");
+
+        recipe_but_layout->addWidget(add_to_rec);
+        recipe_but_layout->addWidget(empty_rec);
+        recipe_but_layout->addWidget(random_add);
+        recipe_but_layout->addWidget(export_recipe);
+        recipe_but_layout->addWidget(help_button);
+
+        recipe_main_layout->addWidget(recipe_but_zone);
+
+        recipe_wdg->show();
+
+        reloadRecipe(rep.get_all());
+
+        QObject::connect(add_to_rec,&QPushButton::clicked,[=](){
+            auto inp=lne_recipe->text().toStdString();
+            int nr=0;
+            bool valid=true;
+            for(auto& ch : inp){
+                if('0'<=ch && ch<='9'){
+                    nr=nr*10+(ch-'0');
+                } else {
+                    valid=false;
+                }
+            }
+            if(nr>srv.get_all_ent().size()){
+                valid=false;
+            }
+            if(valid){
+                rep.add_to_recipe(srv.get_all_ent()[nr]);
+                reloadRecipe(rep.get_all());
+            } else {
+                QMessageBox::warning(this,"Warning",QString::fromStdString("Index invalid"));
+            }
+        });
+
+        QObject::connect(empty_rec,&QPushButton::clicked,[=](){
+            rep.empty_recipe();
+            reloadRecipe(rep.get_all());
+        });
+
+        QObject::connect(random_add,&QPushButton::clicked,[=](){
+            auto inp=lne_recipe->text().toStdString();
+            int nr=0;
+            bool valid=true;
+            for(auto& ch : inp){
+                if('0'<=ch && ch<='9'){
+                    nr=nr*10+(ch-'0');
+                } else {
+                    valid=false;
+                }
+            }
+            if(valid) {
+                rep.random_add(srv.get_all_ent(), nr);
+                reloadRecipe(rep.get_all());
+            } else {
+                QMessageBox::warning(this,"Warning",QString::fromStdString("Numar invalid"));
+            }
+        });
+
+        QObject::connect(export_recipe,&QPushButton::clicked,[=](){
+           auto filename=lne_recipe->text().toStdString();
+           rep.save_to_file(filename);
+        });
+
+        QObject::connect(help_button,&QPushButton::clicked,[=](){
+            string msg="Campul input se foloseste pentru a comunica optiunile\n";
+            msg+="Pentru Add in input se va specifica indicele de adaugat\n";
+            msg+="Pentru Add random in input se va specifica numarul de entitati de adaugat\n";
+            msg+="Pentru Export in input se va specifica numele fisierului in care se face exportul\n";
+            QMessageBox::information(this,"Help",QString::fromStdString(msg));
+        });
+
+    });
+}
+
+
+void GUI::reloadRecipe(vector<Medicine>& meds){
+    recipe_lst->clear();
+    for(const auto& med : meds){
+        QListWidgetItem *item=new QListWidgetItem(QString::fromStdString(med.get_name()));
+        recipe_lst->addItem(item);
+    }
 }
 
 void GUI::reloadList(vector<Medicine>& meds) {
