@@ -17,6 +17,7 @@
 #include <QMessageBox>
 #include <QLayout>
 #include <QTextBlock>
+#include <QTableWidget>
 #include <set>
 
 
@@ -24,8 +25,9 @@ class GUI : public QWidget{
 private:
     Service srv;
     Recipe rep;
-    QListWidget *lst;
-    QListWidget *recipe_lst;
+    //QListWidget *lst;
+    QTableWidget *table;
+
     QHBoxLayout *lyMain = new QHBoxLayout;
     QPushButton *btnSortName;
     QPushButton *btnSortProd;
@@ -43,6 +45,7 @@ private:
     QLineEdit *txtSubst;
     QLineEdit *txtPrice;
     QLineEdit *txtFilt;
+    QListWidget *recipe_lst;
 
     QWidget *opt_but;
     QVBoxLayout *lay_opt;
@@ -60,6 +63,8 @@ private:
     void delMed();
     void uptMed();
     void undoMed();
+
+    void reset_form();
 public:
     GUI(Service& srv) : srv {srv}{
         init_GUI();

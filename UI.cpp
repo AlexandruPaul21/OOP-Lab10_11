@@ -10,8 +10,10 @@ void GUI::init_GUI() {
     QWidget *w_left = new QWidget;
     QVBoxLayout *l_left = new QVBoxLayout;
     w_left->setLayout(l_left);
-    lst = new QListWidget;
-    l_left->addWidget(lst);
+    //lst = new QListWidget;
+    table = new QTableWidget(this);
+
+    l_left->addWidget(table);
 
     QWidget *wdg=new QWidget;
     QHBoxLayout *lay=new QHBoxLayout;
@@ -112,8 +114,35 @@ void GUI::init_GUI() {
 }
 
 void GUI::connectSignalsSlots() {
-    QObject::connect(lst,&QListWidget::itemSelectionChanged,[&](){
-        auto sel=lst->selectedItems();
+//    QObject::connect(lst,&QListWidget::itemSelectionChanged,[&](){
+//        auto sel=lst->selectedItems();
+//        if(sel.empty()){
+//            txtName->setText("");
+//            txtProd->setText("");
+//            txtSubst->setText("");
+//            txtPrice->setText("");
+//        } else {
+//            auto sel_item=sel.at(0);
+//            auto name=sel_item->text();
+//            auto prod=sel_item->data(Qt::UserRole).toString();
+//            Medicine to_print;
+//            int index=0;
+//            for(const auto& med : srv.get_all_ent()){
+//                if(med.get_name()==name.toStdString() && med.get_prod()==prod.toStdString()){
+//                    to_print=med;
+//                    lb_index=index;
+//                }
+//                ++index;
+//            }
+//            txtName->setText(name);
+//            txtProd->setText(prod);
+//            txtSubst->setText(QString::fromStdString(to_print.get_subst()));
+//            txtPrice->setText(QString::number(to_print.get_price()));
+//        }
+//    });
+
+    QObject::connect(table,&QTableWidget::cellClicked,[=](){
+        auto sel=table->selectedItems();
         if(sel.empty()){
             txtName->setText("");
             txtProd->setText("");
@@ -121,23 +150,23 @@ void GUI::connectSignalsSlots() {
             txtPrice->setText("");
         } else {
             auto sel_item=sel.at(0);
-            auto name=sel_item->text();
-            auto prod=sel_item->data(Qt::UserRole).toString();
-            Medicine to_print;
-            int index=0;
-            for(const auto& med : srv.get_all_ent()){
-                if(med.get_name()==name.toStdString() && med.get_prod()==prod.toStdString()){
-                    to_print=med;
-                    lb_index=index;
+            string name=sel_item->text().toStdString();
+            Medicine m;
+            lb_index=0;
+            for(auto& med: srv.get_all_ent()){
+                if(med.get_name()==name || med.get_subst()==name){
+                    m=med;
+                    break;
                 }
-                ++index;
+                ++lb_index;
             }
-            txtName->setText(name);
-            txtProd->setText(prod);
-            txtSubst->setText(QString::fromStdString(to_print.get_subst()));
-            txtPrice->setText(QString::number(to_print.get_price()));
+            txtName->setText(QString::fromStdString(m.get_name()));
+            txtProd->setText(QString::fromStdString(m.get_prod()));
+            txtSubst->setText(QString::fromStdString(m.get_subst()));
+            txtPrice->setText(QString::number(m.get_price()));
         }
     });
+
 
     QObject::connect(btnSortName,&QPushButton::clicked,[&](){
         vector<Medicine> meds;
@@ -167,6 +196,7 @@ void GUI::connectSignalsSlots() {
 
     QObject::connect(btn_reset,&QPushButton::clicked,[=](){
        reloadList(srv.get_all_ent());
+       reset_form();
     });
 
     QObject::connect(btnFilterPrice,&QPushButton::clicked,[=](){
@@ -259,6 +289,7 @@ void GUI::connectSignalsSlots() {
         QObject::connect(empty_rec,&QPushButton::clicked,[=](){
             rep.empty_recipe();
             reloadRecipe(rep.get_all());
+            reset_form();
         });
 
         QObject::connect(random_add,&QPushButton::clicked,[=](){
@@ -306,11 +337,23 @@ void GUI::reloadRecipe(vector<Medicine>& meds){
 }
 
 void GUI::reloadList(vector<Medicine>& meds) {
-    lst->clear();
-    for(const auto& med : meds){
-        QListWidgetItem *item=new QListWidgetItem(QString::fromStdString(med.get_name()));
-        item->setData(Qt::UserRole,QString::fromStdString(med.get_prod()));
-        lst->addItem(item);
+//    lst->clear();
+//    for(const auto& med : meds){
+//        QListWidgetItem *item=new QListWidgetItem(QString::fromStdString(med.get_name()));
+//        item->setData(Qt::UserRole,QString::fromStdString(med.get_prod()));
+//        lst->addItem(item);
+//    }
+
+    table->clear();
+    table->setColumnCount(2);
+    table->setRowCount(meds.size());
+    int i=0;
+    for(const auto&  med :meds){
+        QTableWidgetItem *item=new QTableWidgetItem(QString::fromStdString(med.get_name()));
+        QTableWidgetItem *item1=new QTableWidgetItem(QString::fromStdString(med.get_subst()));
+        table->setItem(i,0,item);
+        table->setItem(i,1,item1);
+        ++i;
     }
 }
 
@@ -410,6 +453,13 @@ void GUI::updateBut(vector<Medicine> &all) {
             QMessageBox::information(nullptr,"Info",QString::number(nr));
         });
     }
+}
+
+void GUI::reset_form(){
+    txtName->setText("");
+    txtProd->setText("");
+    txtSubst->setText("");
+    txtPrice->setText("");
 }
 
 void GUI::undoMed() {
