@@ -8,13 +8,14 @@
 #include <vector>
 #include <string>
 #include "domain.h"
+#include "observer.h"
 
 using std::vector;
 
 /**
  * Clasa care implementeaza ideea de retea
  */
-class Recipe{
+class Recipe: public Observable{
 private:
     vector<Medicine> comp;
 public:

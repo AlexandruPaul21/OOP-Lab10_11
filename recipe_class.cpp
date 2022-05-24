@@ -12,10 +12,12 @@ Recipe::Recipe() {
 
 void Recipe::add_to_recipe(const Medicine &m) {
     comp.push_back(m);
+    notify();
 }
 
 void Recipe::empty_recipe() {
     comp.clear();
+    notify();
 }
 
 void Recipe::random_add(const vector<Medicine>& elems,const int& q) {
@@ -25,6 +27,7 @@ void Recipe::random_add(const vector<Medicine>& elems,const int& q) {
         int nr=dist(mt);
         add_to_recipe(elems[nr]);
     }
+    notify();
 }
 
 void Recipe::save_to_file(const string& filename) {

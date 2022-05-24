@@ -19,14 +19,86 @@
 #include <QTextBlock>
 #include <QTableWidget>
 #include <set>
+#include <QSlider>
+#include <QPainter>
+#include "observer.h"
 
+class RecipeGUI: public QWidget,public Observer{
+private:
+    Recipe& rep;
+    Service& srv;
+    QHBoxLayout *recipe_main_layout=new QHBoxLayout;
+    QListWidget *recipe_lst;
+
+    QLineEdit *lne_recipe;
+    QPushButton *add_to_rec;
+    QPushButton *empty_rec;
+    QPushButton *random_add;
+    QPushButton *export_recipe;
+    QPushButton *help_button;
+
+    void initGUI();
+    void connectSignals();
+    void reloadMeds(vector<Medicine> meds);
+    void update() override{
+        reloadMeds(rep.get_all());
+    }
+public:
+    RecipeGUI(Recipe& rep,Service& srv): srv{srv},rep{rep}{
+        rep.addObs(this);
+        initGUI();
+        connectSignals();
+        reloadMeds(rep.get_all());
+    }
+
+    ~RecipeGUI(){
+        rep.rmObs(this);
+    }
+};
+
+
+class PaintGUI: public QWidget,public Observer{
+private:
+    Recipe& rep;
+public:
+    PaintGUI(Recipe& rep):rep{rep}{
+        rep.addObs(this);
+    }
+
+    void paintEvent(QPaintEvent*) override{
+        QPainter p{this};
+        int x;
+        int y;
+        for(auto &it: rep.get_all()){
+            //p.drawRect(x, y, 10, song.getDurata() * 10);
+            x= rand() % 400 + 1;
+            y = rand() % 400 + 1;
+            //qDebug() << x << " " << y;
+            QRectF target(x, y, 100, 94);
+            QRectF source(0, 0, 732, 720);
+            QImage image("gig_becalu.jpg");
+
+            p.drawImage(target,image, source);
+        }
+    }
+
+    void update() override{
+        repaint();
+    }
+
+    ~PaintGUI(){
+        rep.rmObs(this);
+    }
+};
 
 class GUI : public QWidget{
 private:
     Service srv;
     Recipe rep;
-    //QListWidget *lst;
-    QTableWidget *table;
+    QListWidget *lst;
+    vector<RecipeGUI*> rcp;
+    vector<PaintGUI*> pg;
+    //QTableWidget *table;
 
     QHBoxLayout *lyMain = new QHBoxLayout;
     QPushButton *btnSortName;
@@ -38,7 +110,8 @@ private:
     QPushButton *btn_mod;
     QPushButton *btn_del;
     QPushButton *btn_undo;
-    QPushButton *btn_recipe;
+    QPushButton *btn_recipe_mst;
+    QPushButton *btn_recipe_rdonly;
     QPushButton *btn_reset;
     QLineEdit *txtName;
     QLineEdit *txtProd;
@@ -46,6 +119,7 @@ private:
     QLineEdit *txtPrice;
     QLineEdit *txtFilt;
     QListWidget *recipe_lst;
+    QSlider* plm;
 
     QWidget *opt_but;
     QVBoxLayout *lay_opt;
@@ -57,7 +131,6 @@ private:
     void connectSignalsSlots();
     void reloadList(vector<Medicine>& meds);
     void updateBut(vector<Medicine>& all);
-    void reloadRecipe(vector<Medicine>& meds);
 
     void addMed();
     void delMed();
@@ -71,6 +144,10 @@ public:
         connectSignalsSlots();
         reloadList(srv.get_all_ent());
         updateBut(srv.get_all_ent());
+        rcp.push_back(new RecipeGUI{rep,srv});
+        rcp[0]->show();
+        pg.push_back(new PaintGUI{rep});
+        pg[0]->show();
     }
 };
 

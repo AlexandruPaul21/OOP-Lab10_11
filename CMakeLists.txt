@@ -15,7 +15,7 @@ find_package(Qt6 COMPONENTS
         REQUIRED)
 
 add_executable(Lab10_11v2 main.cpp UI.cpp UI.h service.cpp service.h repo.cpp repo.h domain.cpp domain.h undo_act.h
-                recipe_class.cpp recipe_class.h)
+                recipe_class.cpp recipe_class.h observer.h)
 target_link_libraries(Lab10_11v2
         Qt::Core
         Qt::Gui
