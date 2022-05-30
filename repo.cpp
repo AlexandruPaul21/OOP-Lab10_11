@@ -56,8 +56,13 @@ void FileRepo::load_from_file() {
 
 void FileRepo::save_to_file() {
     ofstream fout(filename);
+    int index=0;
     for(auto& it : Repo::get_elems()){
-        fout<<it.get_name()<<";"<<it.get_prod()<<";"<<it.get_subst()<<";"<<it.get_price()<<"\n";
+        fout<<it.get_name()<<";"<<it.get_prod()<<";"<<it.get_subst()<<";"<<it.get_price();
+        ++index;
+        if(index!=Repo::get_elems().size()){
+            fout<<"\n";
+        }
     }
     fout.close();
 }

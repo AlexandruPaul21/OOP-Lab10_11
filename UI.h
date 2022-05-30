@@ -21,13 +21,16 @@
 #include <set>
 #include <QSlider>
 #include <QPainter>
+#include <QListView>
 #include "observer.h"
+#include "MyListModel.h"
 
 class RecipeGUI: public QWidget,public Observer{
 private:
     Recipe& rep;
     Service& srv;
     QHBoxLayout *recipe_main_layout=new QHBoxLayout;
+
     QListWidget *recipe_lst;
 
     QLineEdit *lne_recipe;
@@ -93,9 +96,14 @@ public:
 
 class GUI : public QWidget{
 private:
+    vector<Medicine> act_list;
     Service srv;
     Recipe rep;
-    QListWidget *lst;
+    QListWidget *lst=new QListWidget;
+
+    QListView* lst_view=new QListView;
+    MyListModel* model;
+
     vector<RecipeGUI*> rcp;
     vector<PaintGUI*> pg;
     //QTableWidget *table;
@@ -141,8 +149,11 @@ private:
 public:
     GUI(Service& srv) : srv {srv}{
         init_GUI();
+        model= new MyListModel{srv.get_all_ent()};
+        lst_view->setModel(model);
         connectSignalsSlots();
         reloadList(srv.get_all_ent());
+        act_list=srv.get_all_ent();
         updateBut(srv.get_all_ent());
         rcp.push_back(new RecipeGUI{rep,srv});
         rcp[0]->show();
