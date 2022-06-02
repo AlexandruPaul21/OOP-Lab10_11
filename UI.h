@@ -79,7 +79,7 @@ public:
             //qDebug() << x << " " << y;
             QRectF target(x, y, 100, 94);
             QRectF source(0, 0, 732, 720);
-            QImage image("gig_becalu.jpg");
+            QImage image("ucluj.jpg");
 
             p.drawImage(target,image, source);
         }
