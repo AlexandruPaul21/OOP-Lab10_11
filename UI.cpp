@@ -115,9 +115,17 @@ void GUI::init_GUI() {
     lay_opt=new QVBoxLayout;
     opt_but->setLayout(lay_opt);
     lyMain->addWidget(opt_but);
+    plm=new QSlider;
+    plm->setMinimum(1);
+    plm->setMaximum(100);
+    lyMain->addWidget(plm);
 }
 
 void GUI::connectSignalsSlots() {
+    QObject::connect(plm,&QSlider::valueChanged,[=](){
+        txtPrice->setText(QString::number(plm->value()));
+    });
+
 
 //    QObject::connect(lst,&QListWidget::itemSelectionChanged,[&](){
 //        auto sel=lst->selectedItems();

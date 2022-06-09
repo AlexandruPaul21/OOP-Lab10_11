@@ -34,6 +34,7 @@ public:
         auto topIndex= createIndex(0,0);
         auto botIndex= createIndex(rowCount(),0);
         emit dataChanged(topIndex,botIndex);
+        emit layoutChanged();
     }
 };
 

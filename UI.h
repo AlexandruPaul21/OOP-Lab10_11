@@ -72,10 +72,12 @@ public:
         QPainter p{this};
         int x;
         int y;
+        //p.drawEllipse(QPointF(0,0),5,5);
         for(auto &it: rep.get_all()){
-            //p.drawRect(x, y, 10, song.getDurata() * 10);
             x= rand() % 400 + 1;
             y = rand() % 400 + 1;
+            //p.drawRect(x, y, 10, it.get_price());
+            //p.drawEllipse(QPointF(0,0),5,5);
             //qDebug() << x << " " << y;
             QRectF target(x, y, 100, 94);
             QRectF source(0, 0, 732, 720);
@@ -159,6 +161,14 @@ public:
         rcp[0]->show();
         pg.push_back(new PaintGUI{rep});
         pg[0]->show();
+    }
+
+    void paintEvent(QPaintEvent*) override{
+        QPainter p{this};
+        p.drawEllipse(QPointF(20,20),20,20);
+        p.drawEllipse(QPointF(this->width()-20,this->height()-20),20,20);
+        p.drawEllipse(QPointF(this->width()-20,20),20,20);
+        p.drawEllipse(QPointF(20,this->height()-20),20,20);
     }
 };
 
